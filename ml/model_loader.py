@@ -18,7 +18,6 @@ import sklearn.compose._column_transformer as _ct
 if not hasattr(_ct, "_RemainderColsList"):
     class _RemainderColsList(list):
         """Compatibility shim for sklearn ColumnTransformer remainder columns."""
-        pass
     _ct._RemainderColsList = _RemainderColsList
     sys.modules["sklearn.compose._column_transformer"]._RemainderColsList = _RemainderColsList
 # ─────────────────────────────────────────────────────────────────────────────
@@ -43,6 +42,9 @@ except ImportError:
 class ModelManager:
     _instance = None
     _lock = threading.Lock()
+    _models: dict
+    _errors: dict
+    _initialized: bool
     
     def __new__(cls):
         with cls._lock:
@@ -144,6 +146,14 @@ class ModelManager:
             "cox_loaded": self._models["cox"] is not None,
             "errors": self._errors
         }
+
+    @property
+    def models(self):
+        return self._models
+
+    @property
+    def errors(self):
+        return self._errors
 
 # Global instance for easy access
 model_manager = ModelManager()

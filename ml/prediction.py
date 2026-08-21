@@ -8,7 +8,7 @@ from __future__ import annotations
 import warnings
 import numpy as np
 import pandas as pd
-from typing import Optional, Any
+from typing import Any
 
 from ml.preprocessing import prepare_cox_input, FEATURE_COLUMNS
 

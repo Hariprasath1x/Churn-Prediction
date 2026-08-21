@@ -9,8 +9,7 @@ Risk score formula:
 """
 
 from __future__ import annotations
-
-from typing import Any
+import pandas as pd
 
 
 # ── Risk level thresholds ────────────────────────────────────────────────────
@@ -116,8 +115,8 @@ def _rule_based_recommendation(risk_level: str, raw: dict, factors: list[str]) -
             "Offer 10% loyalty discount for committing to annual contract",
             "Highlight value of unused services (OnlineSecurity, OnlineBackup)",
         ]
-        if num_services := int(raw.get("NumServices", 0)) <= 2:
-            actions.append("Recommend service bundle upgrade for better value")
+        if int(raw.get("NumServices", 0)) <= 2:
+            actions.append("Recommend relevant add-on bundle at a low introductory rate")
 
     else:  # LOW
         summary = "Customer appears stable. Maintain satisfaction and deepen engagement."
@@ -204,10 +203,8 @@ def compute_retention_analysis(
     }
 
 
-def compute_batch_retention(df_raw, cb_probabilities) -> "pd.DataFrame":
+def compute_batch_retention(df_raw: pd.DataFrame, cb_probabilities: pd.Series) -> pd.DataFrame:
     """Apply rule-based retention logic to a batch of customers."""
-    import pandas as pd
-
     df = df_raw.copy()
     df["churn_probability"] = cb_probabilities.values
     df["churn_prediction"] = (df["churn_probability"] >= 0.5).astype(int)
@@ -227,7 +224,6 @@ def compute_batch_retention(df_raw, cb_probabilities) -> "pd.DataFrame":
 
     def row_to_action(row):
         risk = row["risk_level"]
-        contract = row.get("Contract", "")
         if risk == "CRITICAL":
             return "Immediate intervention — assign retention specialist and offer contract upgrade"
         elif risk == "HIGH":

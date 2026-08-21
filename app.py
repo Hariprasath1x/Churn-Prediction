@@ -10,20 +10,18 @@ import warnings
 warnings.filterwarnings("ignore")
 
 import io
-import json
 import datetime
 import pandas as pd
-import numpy as np
 import plotly.graph_objects as go
 import plotly.express as px
 import streamlit as st
 
-from utils.model_loader import load_all_models
-from utils.preprocessing import engineer_features, engineer_batch, FEATURE_COLUMNS
-from utils.prediction import predict_catboost, predict_logistic_regression, predict_cox, predict_batch_catboost
-from utils.retention_engine import compute_retention_analysis, compute_batch_retention
-from utils.ai_retention_advisor import generate_ai_strategy
-from utils.groq_client import is_groq_configured
+from ml.model_loader import model_manager
+from ml.preprocessing import engineer_features, engineer_batch, FEATURE_COLUMNS
+from ml.prediction import predict_catboost, predict_logistic_regression, predict_cox, predict_batch_catboost
+from services.retention_engine import compute_retention_analysis, compute_batch_retention
+from services.ai_retention_advisor import generate_ai_strategy
+from services.groq_client import is_groq_configured
 
 # ── Page configuration ────────────────────────────────────────────────────────
 st.set_page_config(
@@ -332,7 +330,7 @@ def make_survival_curve(curve_data: dict) -> go.Figure:
     return fig
 
 
-def make_feature_importance(model) -> go.Figure:
+def make_feature_importance(model) -> go.Figure | None:
     try:
         importances = model.get_feature_importance()
         feat_names = model.feature_names_
@@ -512,7 +510,13 @@ st.markdown("""
 
 # ── Load models ───────────────────────────────────────────────────────────────
 with st.spinner("Initialising models…"):
-    models = load_all_models()
+    model_manager.initialize()
+    models = {
+        "catboost": model_manager.models.get("catboost"),
+        "lr": model_manager.models.get("lr"),
+        "cox": model_manager.models.get("cox"),
+        "errors": model_manager.errors
+    }
 
 cb_model = models["catboost"]
 lr_model = models["lr"]
@@ -773,7 +777,7 @@ with main_tab:
             st.markdown("#### Survival Analysis — Cox Proportional Hazards")
 
             if not analysis.get("cox_success"):
-                err = cox_result.get("error", "Unknown error") if cox_model else "Cox model not loaded"
+                err = model_errors.get("cox", "Cox model not loaded") if not cox_model else "Inference error"
                 st.markdown(f"""
                 <div class="warning-box">
                     ⚠️ <strong>Cox PH model inference unavailable</strong><br>

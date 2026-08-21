@@ -2,8 +2,6 @@ from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
 from rest_framework import status
-from unittest.mock import patch
-import pandas as pd
 
 class PredictionAPITests(TestCase):
     def setUp(self):
