@@ -595,9 +595,14 @@ with main_tab:
         with col9:
             monthly = st.number_input("Monthly Charges ($)", 0.0, 200.0, 65.0, 0.5, key="monthly")
 
-        total_charges = st.number_input("Total Charges ($)", 0.0, 10000.0,
-                                         float(tenure * monthly), 1.0, key="total")
-
+        total_charges = st.number_input(
+            "Total Charges ($)",
+            min_value=0.0,
+            max_value=20000.0,
+            value=tenure * monthly,
+            step=1.0,
+            key="total"
+        )
         st.markdown('<div class="section-header">Phone & Internet Services</div>', unsafe_allow_html=True)
         col10, col11, col12 = st.columns(3)
         with col10:
